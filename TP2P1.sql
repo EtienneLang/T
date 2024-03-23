@@ -117,3 +117,75 @@ END;
 -----------------------------------
 SELECT calculer_total_FCT(3, DATE '2024-02-24', DATE '2024-02-26', 6)  || '$' Total
 from dual;
+
+
+
+
+---------------
+-- Question 4 (NE MARCHE PAS)
+---------------
+CREATE OR REPLACE FUNCTION 
+annonce_est_dispo_FCT(i_id_user_1 NUMBER, i_id_user_2 NUMBER)
+RETURN message_varray
+IS
+TYPE message_varray IS VARRAY(100) OF VARCHAR2(200) NOT NULL;
+v_messages message_varray := message_varray();  
+BEGIN
+    FOR i IN (SELECT messageid, contenu
+    INTO v_messages
+    FROM cnc.messages
+    WHERE (expediteurutilisateurid = i_id_user_1 OR expediteurutilisateurid = i_id_user_2)
+    AND (destinateurutilisateurid = i_id_user_1 OR destinateurutilisateurid = i_id_user_2)) LOOP
+        v_messages.EXTEND;
+        v_messages.LAST := i;
+    END LOOP;
+    
+    FOR x IN 1..v_messages.COUNT LOOP
+    DBMS_OUTPUT.PUT_LINE(x);
+    END LOOP;
+    RETURN v_messages;
+END;
+
+-----------------------------------
+-- Pour Tester la fonction Q4
+-----------------------------------
+DECLARE
+    v_id_to_check NUMBER := 3; -- ID à tester
+    v_date_debut_to_check DATE := '2024-02-24'; -- Date début à tester
+    v_date_fin_to_check DATE := '2024-04-24'; -- Date fin à tester
+    v_result BOOLEAN; 
+BEGIN
+    v_result := annonce_est_dispo_FCT(v_id_to_check, v_date_debut_to_check, v_date_fin_to_check);
+    
+    IF v_result THEN
+        DBMS_OUTPUT.PUT_LINE('Annonce ' || v_id_to_check || ' valide.');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Annonce ' || v_id_to_check || ' non valide.');
+    END IF;
+END;
+
+
+
+---------------
+-- Question 5
+---------------
+CREATE OR REPLACE PROCEDURE supprimer_annonce_PRC(
+    i_id_annonce NUMBER)
+IS
+BEGIN
+    DELETE FROM cnc.reservations
+    WHERE annonceid = i_id_annonce;
+    DELETE FROM cnc.photos
+    WHERE annonceid = i_id_annonce;
+    DELETE FROM cnc.commentaires
+    WHERE annonceid = i_id_annonce;
+    DELETE FROM cnc.utilisateur_annonces
+    WHERE annonceid = i_id_annonce;
+    DELETE FROM cnc.annonces
+    WHERE annonceid = i_id_annonce;
+END; 
+
+-----------------------------------
+-- Pour Tester la fonction Q5
+-----------------------------------
+EXEC supprimer_annonce_PRC(1)
