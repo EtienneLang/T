@@ -179,7 +179,7 @@ BEGIN
     WHERE annonceid = i_id_annonce;
     DELETE FROM cnc.commentaires
     WHERE annonceid = i_id_annonce;
-    DELETE FROM cnc.utilisateur_annonces
+    DELETE FROM cnc.utilisateurs_annonces
     WHERE annonceid = i_id_annonce;
     DELETE FROM cnc.annonces
     WHERE annonceid = i_id_annonce;
@@ -189,3 +189,23 @@ END;
 -- Pour Tester la fonction Q5
 -----------------------------------
 EXEC supprimer_annonce_PRC(1)
+
+
+
+---------------
+-- Question 6
+---------------
+--CREATE OR REPLACE PROCEDURE reserver_PRC(
+--    i_id_annonce NUMBER, 
+--    i_date_debut DATE, 
+--    i_date_fin DATE, 
+--    i_nombre_personne NUMBER)
+--IS
+--BEGIN
+
+--END; 
+
+-----------------------------------
+-- Pour Tester la fonction Q6
+-----------------------------------
+--EXEC reserver_PRC(1)
