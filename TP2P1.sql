@@ -85,7 +85,7 @@ END;
 -- Question 3
 ---------------
 CREATE OR REPLACE FUNCTION 
-calculer_total_FCT(i_id_annonce NUMBER, i_date_debut DATE, i_date_fin DATE, i_nombre_personne NUMBER)
+calculer_total_FCT(i_date_debut DATE, i_date_fin DATE, i_nombre_personne NUMBER)
 RETURN NUMBER
 IS
 v_nombre_jours NUMBER;
@@ -115,7 +115,7 @@ END;
 -----------------------------------
 -- Pour Tester la fonction Q3
 -----------------------------------
-SELECT calculer_total_FCT(3, DATE '2024-02-24', DATE '2024-02-26', 6)  || '$' Total
+SELECT calculer_total_FCT(DATE '2024-02-24', DATE '2024-02-26', 6)  || '$' Total
 from dual;
 
 
@@ -195,17 +195,26 @@ EXEC supprimer_annonce_PRC(1)
 ---------------
 -- Question 6
 ---------------
---CREATE OR REPLACE PROCEDURE reserver_PRC(
---    i_id_annonce NUMBER, 
---    i_date_debut DATE, 
---    i_date_fin DATE, 
---    i_nombre_personne NUMBER)
---IS
---BEGIN
-
---END; 
+SET SERVEROUTPUT ON 
+CREATE OR REPLACE PROCEDURE reserver_PRC(
+    i_id_annonce NUMBER, 
+    i_date_debut DATE, 
+    i_date_fin DATE, 
+    i_nombre_personne NUMBER)
+IS
+    v_result BOOLEAN;
+    v_total NUMBER;
+BEGIN
+    v_result := annonce_est_dispo_FCT(i_id_annonce, i_date_debut, i_date_fin);
+    IF v_result THEN 
+        v_total := calculer_total_FCT(i_date_debut, i_date_fin, i_nombre_personne);
+        INSERT INTO reservations(reservationid, annonceid, datedebut, datefin, statut, montanttotal) 
+        VALUES (10, i_id_annonce, i_date_debut, i_date_fin, 'En Attente', v_total);
+        DBMS_OUTPUT.PUT_LINE('valide');
+    END IF;
+END; 
 
 -----------------------------------
 -- Pour Tester la fonction Q6
 -----------------------------------
---EXEC reserver_PRC(1)
+EXEC reserver_PRC(3, DATE '2024-02-24', DATE '2024-04-24', 6)
