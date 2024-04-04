@@ -27,31 +27,31 @@ INSERT INTO Utilisateurs (UtilisateurID, Nom, Prenom, Email, MotDePasse) VALUES
 (9, 'Lefebvre', 'Jacques', 'jacques@example.com', 'motdepasse9');
 
 -- Insertion des données dans la table Annonces
-INSERT INTO Annonces (AnnonceID, AuteurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
+INSERT INTO Annonces (AnnonceID, UtilisateurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
 (1, 1, 'Charmant appartement près du Vieux-Québec', 'Appartement lumineux avec vue sur la ville, à quelques pas des principales attractions touristiques.', 100, 'Vieux-Québec, Québec', TO_DATE('2024-03-17', 'YYYY-MM-DD'));
 
-INSERT INTO Annonces (AnnonceID, AuteurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
+INSERT INTO Annonces (AnnonceID, UtilisateurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
 (2, 2, 'Maison de caractère avec jardin en plein cœur de la ville', 'Maison spacieuse et confortable idéale pour les familles, à proximité des parcs et des commerces.', 150, 'Saint-Roch, Québec', TO_DATE('2024-03-17', 'YYYY-MM-DD'));
 
-INSERT INTO Annonces (AnnonceID, AuteurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
+INSERT INTO Annonces (AnnonceID, UtilisateurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
 (3, 3, 'Studio moderne avec terrasse privée', 'Studio entièrement équipé dans un quartier calme mais proche de toutes les commodités.', 80, 'Limoilou, Québec', TO_DATE('2024-03-17', 'YYYY-MM-DD'));
 
-INSERT INTO Annonces (AnnonceID, AuteurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
+INSERT INTO Annonces (AnnonceID, UtilisateurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
 (4, 4, 'Condo de luxe avec vue imprenable sur le fleuve', 'Condo haut de gamme avec toutes les commodités modernes et une vue panoramique sur le fleuve Saint-Laurent.', 200, 'Levis, Québec', TO_DATE('2024-03-18', 'YYYY-MM-DD'));
 
-INSERT INTO Annonces (AnnonceID, AuteurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
+INSERT INTO Annonces (AnnonceID, UtilisateurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
 (5, 5, 'Appartement cosy au cœur du centre-ville', 'Appartement rénové avec goût, à proximité des restaurants et des boutiques du centre-ville.', 120, 'Sainte-Foy, Québec', TO_DATE('2024-03-18', 'YYYY-MM-DD'));
 
-INSERT INTO Annonces (AnnonceID, AuteurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
+INSERT INTO Annonces (AnnonceID, UtilisateurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
 (6, 6, 'Maison chaleureuse avec jardin et piscine', 'Maison idéale pour les vacances en famille, avec un grand jardin et une piscine privée.', 180, 'Beauport, Québec', TO_DATE('2024-03-18', 'YYYY-MM-DD'));
 
-INSERT INTO Annonces (AnnonceID, AuteurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
+INSERT INTO Annonces (AnnonceID, UtilisateurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
 (7, 7, 'Studio en plein cœur du quartier historique', 'Studio confortable à proximité des sites historiques et des restaurants.', 90, 'Vieux-Port, Québec', TO_DATE('2024-03-19', 'YYYY-MM-DD'));
 
-INSERT INTO Annonces (AnnonceID, AuteurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
+INSERT INTO Annonces (AnnonceID, UtilisateurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
 (8, 8, 'Appartement moderne avec vue sur la rivière', 'Appartement élégant avec balcon offrant une vue panoramique sur la rivière Saint-Charles.', 130, 'Saint-Roch, Québec', TO_DATE('2024-03-19', 'YYYY-MM-DD'));
 
-INSERT INTO Annonces (AnnonceID, AuteurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
+INSERT INTO Annonces (AnnonceID, UtilisateurID, Titre, Description, PrixParNuit, Localisation, DateCreation) VALUES 
 (9, 9, 'Chalet rustique au bord du lac', 'Chalet pittoresque niché au bord d''un lac tranquille, idéal pour une escapade relaxante en nature.', 160, 'Lac-Beauport, Québec', TO_DATE('2024-03-20', 'YYYY-MM-DD'));
 
 -- Insertion des données dans la table Reservations
@@ -140,31 +140,32 @@ INSERT INTO Photos (PhotoID, AnnonceID, URLPhoto, Description) VALUES
 
 -- Insertion des données dans la table Messages
 INSERT INTO Messages (MessageID, ExpediteurUtilisateurID, DestinataireUtilisateurID, Contenu, DateEnvoi) VALUES 
-(1, 2, 1, 'Bonjour Jean, intéressé par votre appartement. Modalités de location à discuter ?', TO_DATE('2024-04-15', 'YYYY-MM-DD'));
+(1, 2, 1, 'Bonjour Jean, intéressé par votre appartement. Modalités de location à discuter ?', TIMESTAMP '2024-04-15 08:30:00');
 
 INSERT INTO Messages (MessageID, ExpediteurUtilisateurID, DestinataireUtilisateurID, Contenu, DateEnvoi) VALUES 
-(2, 1, 2, 'Bonjour Marie, ravi que l''appartement vous intéresse. Nous pouvons discuter des détails dès maintenant.', TO_DATE('2024-04-15', 'YYYY-MM-DD'));
+(2, 1, 2, 'Bonjour Marie, ravi que l''appartement vous intéresse. Nous pouvons discuter des détails dès maintenant.', TIMESTAMP '2024-04-15 10:45:00');
 
 INSERT INTO Messages (MessageID, ExpediteurUtilisateurID, DestinataireUtilisateurID, Contenu, DateEnvoi) VALUES 
-(3, 3, 1, 'Bonjour Jean, j''ai vu votre annonce pour le studio. Est-il disponible la semaine prochaine ?', TO_DATE('2024-04-16', 'YYYY-MM-DD'));
+(3, 3, 1, 'Bonjour Jean, j''ai vu votre annonce pour le studio. Est-il disponible la semaine prochaine ?', TIMESTAMP '2024-04-16 14:20:00');
 
 INSERT INTO Messages (MessageID, ExpediteurUtilisateurID, DestinataireUtilisateurID, Contenu, DateEnvoi) VALUES 
-(4, 1, 3, 'Bonjour Pierre, oui le studio est disponible. Vous pouvez réserver dès maintenant.', TO_DATE('2024-04-16', 'YYYY-MM-DD'));
+(4, 1, 3, 'Bonjour Pierre, oui le studio est disponible. Vous pouvez réserver dès maintenant.', TIMESTAMP '2024-04-16 16:10:00');
 
 INSERT INTO Messages (MessageID, ExpediteurUtilisateurID, DestinataireUtilisateurID, Contenu, DateEnvoi) VALUES 
-(5, 4, 2, 'Bonjour Marie, votre maison semble parfaite pour nos prochaines vacances en famille.', TO_DATE('2024-04-17', 'YYYY-MM-DD'));
+(5, 4, 2, 'Bonjour Marie, votre maison semble parfaite pour nos prochaines vacances en famille.', TIMESTAMP '2024-04-17 11:00:00');
 
 INSERT INTO Messages (MessageID, ExpediteurUtilisateurID, DestinataireUtilisateurID, Contenu, DateEnvoi) VALUES 
-(6, 2, 4, 'Bonjour Sylvie, merci pour l''intérêt. Nous serions heureux de vous accueillir.', TO_DATE('2024-04-17', 'YYYY-MM-DD'));
+(6, 2, 4, 'Bonjour Sylvie, merci pour l''intérêt. Nous serions heureux de vous accueillir.', TIMESTAMP '2024-04-17 13:45:00');
 
 INSERT INTO Messages (MessageID, ExpediteurUtilisateurID, DestinataireUtilisateurID, Contenu, DateEnvoi) VALUES 
-(7, 5, 3, 'Bonjour Pierre, votre studio semble bien équipé. Nous souhaiterions le louer pour une semaine.', TO_DATE('2024-04-18', 'YYYY-MM-DD'));
+(7, 5, 3, 'Bonjour Pierre, votre studio semble bien équipé. Nous souhaiterions le louer pour une semaine.', TIMESTAMP '2024-04-18 09:30:00');
 
 INSERT INTO Messages (MessageID, ExpediteurUtilisateurID, DestinataireUtilisateurID, Contenu, DateEnvoi) VALUES 
-(8, 3, 5, 'Bonjour Robert, je suis content que ça vous plaise. Vous pouvez réserver dès maintenant.', TO_DATE('2024-04-18', 'YYYY-MM-DD'));
+(8, 3, 5, 'Bonjour Robert, je suis content que ça vous plaise. Vous pouvez réserver dès maintenant.', TIMESTAMP '2024-04-18 14:00:00');
 
 INSERT INTO Messages (MessageID, ExpediteurUtilisateurID, DestinataireUtilisateurID, Contenu, DateEnvoi) VALUES 
-(9, 6, 4, 'Bonjour Sylvie, nous avons été séduits par votre condo. Nous aimerions le réserver pour nos prochaines vacances.', TO_DATE('2024-04-19', 'YYYY-MM-DD'));
+(9, 6, 4, 'Bonjour Sylvie, nous avons été séduits par votre condo. Nous aimerions le réserver pour nos prochaines vacances.', TIMESTAMP '2024-04-19 10:20:00');
+
 
 -- Insertion des données dans la table Utilisateurs_Annonces
 INSERT INTO Utilisateurs_Annonces (UtilisateurID, AnnonceID) VALUES (1, 1);

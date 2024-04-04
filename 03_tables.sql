@@ -18,7 +18,7 @@ COMMENT ON TABLE Utilisateurs IS 'Table contenant les informations des utilisate
 PROMPT Création de la table Annonces
 CREATE TABLE Annonces (
     AnnonceID NUMBER PRIMARY KEY,
-    AuteurID NUMBER,
+    UtilisateurID NUMBER,
     Titre VARCHAR2(100),
     Description VARCHAR2(500),
     PrixParNuit NUMBER,
@@ -73,7 +73,7 @@ CREATE TABLE Messages (
     ExpediteurUtilisateurID NUMBER,
     DestinataireUtilisateurID NUMBER,
     Contenu VARCHAR2(1000),
-    DateEnvoi DATE
+    DateEnvoi TIMESTAMP
 );
 
 COMMENT ON TABLE Messages IS 'Table contenant les messages échangés entre utilisateurs';

@@ -19,24 +19,7 @@ BEGIN
     END IF;
     RETURN v_reponse;
 END;
-
------------------------------------
--- Pour Tester la fonction Q1
------------------------------------
-DECLARE
-    v_id_to_check NUMBER := 2; -- ID à tester
-    v_result BOOLEAN; 
-BEGIN
-    v_result := utilisateur_existe_FCT(v_id_to_check);
-    
-    IF v_result THEN
-        DBMS_OUTPUT.PUT_LINE('ID ' || v_id_to_check || ' exists.');
-    ELSE
-        DBMS_OUTPUT.PUT_LINE('ID ' || v_id_to_check || ' does not exist.');
-    END IF;
-END;
-
-
+/
 
 ---------------
 -- Question 2
@@ -60,27 +43,7 @@ BEGIN
     END IF;
     RETURN v_reponse;
 END;
-
------------------------------------
--- Pour Tester la fonction Q2
------------------------------------
-DECLARE
-    v_id_to_check NUMBER := 3; -- ID à tester
-    v_date_debut_to_check DATE := '2024-02-24'; -- Date début à tester
-    v_date_fin_to_check DATE := '2024-04-24'; -- Date fin à tester
-    v_result BOOLEAN; 
-BEGIN
-    v_result := annonce_est_dispo_FCT(v_id_to_check, v_date_debut_to_check, v_date_fin_to_check);
-    
-    IF v_result THEN
-        DBMS_OUTPUT.PUT_LINE('Annonce ' || v_id_to_check || ' valide.');
-    ELSE
-        DBMS_OUTPUT.PUT_LINE('Annonce ' || v_id_to_check || ' non valide.');
-    END IF;
-END;
-
-
-
+/
 ---------------
 -- Question 3
 ---------------
@@ -111,60 +74,22 @@ BEGIN
     END IF;
     RETURN v_total;
 END;
-
------------------------------------
--- Pour Tester la fonction Q3
------------------------------------
-SELECT calculer_total_FCT(DATE '2024-02-24', DATE '2024-02-26', 6)  || '$' Total
-from dual;
-
-
-
-
+/
 ---------------
 -- Question 4 (NE MARCHE PAS)
 ---------------
+CREATE OR REPLACE TYPE msg_varray IS table OF VARCHAR(1000);
+/
+
 CREATE OR REPLACE FUNCTION 
-annonce_est_dispo_FCT(i_id_user_1 NUMBER, i_id_user_2 NUMBER)
-RETURN message_varray
-IS
-TYPE message_varray IS VARRAY(100) OF VARCHAR2(200) NOT NULL;
-v_messages message_varray := message_varray();  
+    obtenir_message_historique_FCT(i_id_user_1 NUMBER, i_id_user_2 NUMBER)
+    RETURN msg_varray
+AS
+    message_varray msg_varray := msg_varray();
 BEGIN
-    FOR i IN (SELECT messageid, contenu
-    INTO v_messages
-    FROM cnc.messages
-    WHERE (expediteurutilisateurid = i_id_user_1 OR expediteurutilisateurid = i_id_user_2)
-    AND (destinateurutilisateurid = i_id_user_1 OR destinateurutilisateurid = i_id_user_2)) LOOP
-        v_messages.EXTEND;
-        v_messages.LAST := i;
-    END LOOP;
-    
-    FOR x IN 1..v_messages.COUNT LOOP
-    DBMS_OUTPUT.PUT_LINE(x);
-    END LOOP;
-    RETURN v_messages;
+    RETURN message_varray;
 END;
-
------------------------------------
--- Pour Tester la fonction Q4
------------------------------------
-DECLARE
-    v_id_to_check NUMBER := 3; -- ID à tester
-    v_date_debut_to_check DATE := '2024-02-24'; -- Date début à tester
-    v_date_fin_to_check DATE := '2024-04-24'; -- Date fin à tester
-    v_result BOOLEAN; 
-BEGIN
-    v_result := annonce_est_dispo_FCT(v_id_to_check, v_date_debut_to_check, v_date_fin_to_check);
-    
-    IF v_result THEN
-        DBMS_OUTPUT.PUT_LINE('Annonce ' || v_id_to_check || ' valide.');
-    ELSE
-        DBMS_OUTPUT.PUT_LINE('Annonce ' || v_id_to_check || ' non valide.');
-    END IF;
-END;
-
-
+/
 
 ---------------
 -- Question 5
@@ -184,13 +109,7 @@ BEGIN
     DELETE FROM cnc.annonces
     WHERE annonceid = i_id_annonce;
 END; 
-
------------------------------------
--- Pour Tester la fonction Q5
------------------------------------
-EXEC supprimer_annonce_PRC(1)
-
-
+/
 
 ---------------
 -- Question 6
@@ -213,8 +132,18 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('valide');
     END IF;
 END; 
+/
 
------------------------------------
--- Pour Tester la fonction Q6
------------------------------------
-EXEC reserver_PRC(3, DATE '2024-02-24', DATE '2024-04-24', 6)
+---------------
+-- Question 7
+---------------
+
+---------------
+-- Question 8
+---------------
+---------------
+-- Question 9
+---------------
+---------------
+-- Question 10
+---------------
