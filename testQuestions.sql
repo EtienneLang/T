@@ -73,3 +73,8 @@ EXEC supprimer_annonce_PRC(1)
 -----------------------------------
 EXEC reserver_PRC(3, DATE '2024-02-24', DATE '2024-04-24', 6)
 /
+
+-----------------------------------
+-- Pour Tester la fonction Q9
+-----------------------------------
+EXEC reservation_par_usager_par_annonce_PRC;

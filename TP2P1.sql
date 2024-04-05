@@ -144,6 +144,40 @@ END;
 ---------------
 -- Question 9
 ---------------
+CREATE OR REPLACE PROCEDURE reservation_par_usager_par_annonce_PRC IS
+    v_number_of_clients NUMBER;
+    v_number_of_reservation NUMBER;
+    v_info_user utilisateurs%ROWTYPE;
+    v_info_reservation reservations%ROWTYPE;
+BEGIN
+    SELECT COUNT(*) INTO v_number_of_clients FROM utilisateurs;
+                DBMS_OUTPUT.PUT_LINE(v_number_of_clients);
+
+    IF v_number_of_clients > 0 THEN
+        FOR i IN 1..v_number_of_clients LOOP
+            SELECT * INTO v_info_user FROM utilisateurs OFFSET i-1 ROWS FETCH NEXT 1 ROWS ONLY;
+            DBMS_OUTPUT.PUT_LINE('- - - - - - - - - - - - - - - - - - - - -');
+            DBMS_OUTPUT.PUT_LINE('Utilisateur ID : ' || v_info_user.utilisateurid);
+            DBMS_OUTPUT.PUT_LINE('Utilisateur Nom : ' || v_info_user.prenom || ' ' || v_info_user.nom);
+            
+            SELECT COUNT(*) INTO v_number_of_reservation FROM reservations WHERE utilisateurid = v_info_user.utilisateurid;
+            IF v_number_of_reservation <= 0 THEN
+                DBMS_OUTPUT.PUT_LINE('AUCUNE RÉSERVATIONS');
+            ELSE
+                FOR n IN 1..v_number_of_reservation LOOP
+                    SELECT * INTO v_info_reservation FROM reservations WHERE utilisateurid = v_info_user.utilisateurid OFFSET n-1 ROWS FETCH NEXT 1 ROWS ONLY;
+                        DBMS_OUTPUT.PUT_LINE('- -');
+                        DBMS_OUTPUT.PUT_LINE('Reservation ID : ' || v_info_reservation.reservationid);
+                        DBMS_OUTPUT.PUT_LINE('Date début : ' || v_info_reservation.datedebut);
+                        DBMS_OUTPUT.PUT_LINE('Date fin : ' || v_info_reservation.datefin);
+                END LOOP;
+            END IF;
+
+        END LOOP;
+    END IF;
+END;
+
+
 ---------------
 -- Question 10
 ---------------
