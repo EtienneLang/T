@@ -8,15 +8,25 @@ IS
 v_compteur NUMBER;
 v_reponse BOOLEAN;
 BEGIN
+    -- Gestion d'erreur --
+    IF i_id_user IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Paramètre NULL : L''ID utilisateur est NULL.');
+    END IF;
+    IF i_id_user < 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Nombre négatif en paramètre : L''ID utilisateur est négatif.');
+    END IF;
+    -----------------------
     SELECT COUNT(*)
     INTO v_compteur
     FROM cnc.utilisateurs
     WHERE utilisateurid = i_id_user;
+
     IF v_compteur = 0 THEN
-        v_reponse := false;
-    ELSE
-        v_reponse := true;
+        RAISE_APPLICATION_ERROR(-20003, 'L''ID passé en paramètre ne correspond à rien dans la base de données.');
     END IF;
+
+    v_reponse := true;
+
     RETURN v_reponse;
 END;
 /
@@ -31,10 +41,25 @@ IS
 v_compteur NUMBER;
 v_reponse BOOLEAN;
 BEGIN
+    -- Gestion d'erreur --
+    IF i_id_annonce IS NULL OR i_date_debut IS NULL OR i_date_fin IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Paramètre NULL : Un paramètre est NULL.');
+    END IF;
+    IF i_id_annonce < 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Nombre négatif en paramètre : L''ID utilisateur est négatif.');
+    END IF;
+    IF i_date_fin < i_date_debut THEN 
+        RAISE_APPLICATION_ERROR(-20003, 'Dates non valides : Date fin dois être plus grande que date début.');
+    END IF;
+    -----------------------
     SELECT COUNT(*)
     INTO v_compteur
     FROM cnc.annonces
     WHERE annonceid = i_id_annonce AND datecreation BETWEEN i_date_debut AND i_date_fin;
+    
+    IF v_compteur = 0 THEN
+        RAISE_APPLICATION_ERROR(-20004, 'L''ID passé en paramètre ne correspond à rien dans la base de données.');
+    END IF;
     
     IF v_compteur <= 0 THEN
         v_reponse := false;
@@ -55,8 +80,18 @@ v_nombre_jours NUMBER;
 v_total NUMBER := 0;
 v_prix_nettoyage NUMBER := 20;
 BEGIN
+    -- Gestion d'erreurs --
+    IF i_date_debut IS NULL OR i_date_fin IS NULL OR i_nombre_personne IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Paramètre NULL : L''ID utilisateur est NULL.');
+    END IF;
+    IF i_nombre_personne <= 0 THEN 
+        RAISE_APPLICATION_ERROR(-20002, 'Nombre de personne non valide : Le nombre de personne doit être supérieur à 0.');
+    END IF;
+    IF i_date_fin < i_date_debut THEN 
+        RAISE_APPLICATION_ERROR(-20003, 'Dates non valides : Date fin dois être plus grande que date début.');
+    END IF;
+    -----------------------
     v_nombre_jours := EXTRACT(DAY FROM NUMTODSINTERVAL(i_date_fin - i_date_debut, 'DAY'));
-
     IF v_nombre_jours >= 2 THEN
         v_total := v_total + i_nombre_personne * v_prix_nettoyage * 2;
         IF v_nombre_jours > 2 THEN
@@ -87,6 +122,7 @@ CREATE OR REPLACE FUNCTION
 AS
     message_varray msg_varray := msg_varray();
 BEGIN
+    
     RETURN message_varray;
 END;
 /
@@ -97,7 +133,21 @@ END;
 CREATE OR REPLACE PROCEDURE supprimer_annonce_PRC(
     i_id_annonce NUMBER)
 IS
+    v_compteur NUMBER;
 BEGIN
+    -- Gestion d'erreurs --
+    IF i_id_annonce IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Paramètre NULL : Un paramètre est NULL.');
+    END IF;
+    IF i_id_annonce < 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Nombre négatif en paramètre : L''ID annonce est négatif.');
+    END IF;
+    SELECT COUNT(*) INTO v_compteur FROM annonces WHERE annonceid = i_id_annonce;
+    IF v_compteur = 0 THEN 
+        RAISE_APPLICATION_ERROR(-20003, 'L''ID passé en paramètre ne correspond à rien dans la base de données.');
+    END IF;
+    
+    -----------------------
     DELETE FROM cnc.reservations
     WHERE annonceid = i_id_annonce;
     DELETE FROM cnc.photos
@@ -124,6 +174,22 @@ IS
     v_result BOOLEAN;
     v_total NUMBER;
 BEGIN
+    -- Gestion d'erreurs --
+    IF i_id_annonce IS NULL OR i_date_debut IS NULL OR i_date_fin IS NULL OR i_nombre_personne IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Paramètre NULL : Un paramètre est NULL.');
+    END IF;
+    IF i_id_annonce < 0 OR i_nombre_personne < 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Nombre négatif en paramètre');
+    END IF;
+    SELECT COUNT(*) INTO v_compteur FROM annonces WHERE annonceid = i_id_annonce;
+    IF v_compteur = 0 THEN 
+        RAISE_APPLICATION_ERROR(-20003, 'L''ID passé en paramètre ne correspond à rien dans la base de données.');
+    END IF;
+    IF i_date_fin < i_date_debut THEN 
+        RAISE_APPLICATION_ERROR(-20004, 'Dates non valides : Date fin dois être plus grande que date début.');
+    END IF;
+    -----------------------
+
     v_result := annonce_est_dispo_FCT(i_id_annonce, i_date_debut, i_date_fin);
     IF v_result THEN 
         v_total := calculer_total_FCT(i_date_debut, i_date_fin, i_nombre_personne);
@@ -141,10 +207,12 @@ END;
 ---------------
 -- Question 8
 ---------------
+
 ---------------
 -- Question 9
 ---------------
-CREATE OR REPLACE PROCEDURE reservation_par_usager_par_annonce_PRC IS
+CREATE OR REPLACE PROCEDURE reservation_par_usager_par_annonce_PRC 
+IS
     v_number_of_clients NUMBER;
     v_number_of_reservation NUMBER;
     v_info_user utilisateurs%ROWTYPE;

@@ -4,7 +4,7 @@ SET SERVEROUTPUT ON;
 -- Pour Tester la fonction Q1
 -----------------------------------
 DECLARE
-    v_id_to_check NUMBER := 2; -- ID � tester
+    v_id_to_check NUMBER := -2000; -- ID � tester
     v_result BOOLEAN; 
 BEGIN
     v_result := utilisateur_existe_FCT(v_id_to_check);
@@ -22,7 +22,7 @@ END;
 -----------------------------------
 DECLARE
     v_id_to_check NUMBER := 3; -- ID � tester
-    v_date_debut_to_check DATE := '2024-02-24'; -- Date d�but � tester
+    v_date_debut_to_check DATE := '2024-06-24'; -- Date d�but � tester
     v_date_fin_to_check DATE := '2024-04-24'; -- Date fin � tester
     v_result BOOLEAN; 
 BEGIN
@@ -65,7 +65,7 @@ END;
 -----------------------------------
 -- Pour Tester la fonction Q5
 -----------------------------------
-EXEC supprimer_annonce_PRC(1)
+EXEC supprimer_annonce_PRC(123)
 /
 
 -----------------------------------
