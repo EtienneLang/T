@@ -111,19 +111,42 @@ BEGIN
 END;
 /
 ---------------
--- Question 4 (NE MARCHE PAS)
+-- Question 4
 ---------------
-CREATE OR REPLACE TYPE msg_varray IS table OF VARCHAR(1000);
+CREATE OR REPLACE TYPE t_message AS OBJECT(
+    MessageId NUMBER,
+    ExpediteurUtilisateurID NUMBER,
+    DestinataireUtilisateurID NUMBER,
+    Contenu VARCHAR2(1000),
+    DateEnvoi TIMESTAMP(6)
+    );
 /
 
-CREATE OR REPLACE FUNCTION 
-    obtenir_message_historique_FCT(i_id_user_1 NUMBER, i_id_user_2 NUMBER)
-    RETURN msg_varray
+CREATE OR REPLACE TYPE t_message_varray AS VARRAY(100) OF t_message;
+/
+
+CREATE OR REPLACE FUNCTION obtenir_message_historique_FCT(i_id_user_1 NUMBER, i_id_user_2 NUMBER)
+    RETURN t_message_varray
 AS
-    message_varray msg_varray := msg_varray();
+    messages t_message_varray := t_message_varray();
 BEGIN
-    
-    RETURN message_varray;
+    FOR message_trouve IN(
+        SELECT * FROM messages
+        WHERE (expediteurutilisateurid = i_id_user_1 AND destinataireutilisateurid = i_id_user_2)
+        OR (expediteurutilisateurid = i_id_user_2 AND destinataireutilisateurid = i_id_user_1)
+        ORDER BY dateenvoi
+    )
+    LOOP
+    messages.EXTEND;
+    messages(messages.LAST) := t_message(
+        message_trouve.MessageID,
+        message_trouve.ExpediteurUtilisateurID,
+        message_trouve.DestinataireUtilisateurID,
+        message_trouve.Contenu,
+        message_trouve.DateEnvoi  
+        );
+    END LOOP;
+    RETURN messages;
 END;
 /
 
@@ -203,11 +226,48 @@ END;
 ---------------
 -- Question 7
 ---------------
-
+CREATE OR REPLACE PROCEDURE afficher_converstation_PRC(
+        i_id_user1 NUMBER,
+        i_id_user2 NUMBER
+    )
+AS
+    messages t_message_varray;
+    nom_utilisateur VARCHAR2(100);
+BEGIN
+    messages := obtenir_message_historique_FCT(i_id_user1, i_id_user2);
+    FOR i in 1..messages.COUNT
+    LOOP
+        SELECT prenom || ' ' || nom INTO nom_utilisateur
+        FROM utilisateurs WHERE utilisateurid = messages(i).ExpediteurUtilisateurID;
+        DBMS_OUTPUT.PUT_LINE(
+            nom_utilisateur || ' : ' || messages(i).Contenu || ' - envoyé le ' || TO_CHAR(messages(i).DateEnvoi, 'YYYY-MM-DD HH24:MI:SS')
+        );
+    END LOOP;
+END;
+/
 ---------------
 -- Question 8
 ---------------
+CREATE OR REPLACE TYPE dict_localisation_revenu IS TABLE OF NUMBER INDEX BY VARCHAR2(200);
+/
 
+CREATE OR REPLACE PROCEDURE revenu_par_localisation_PRC
+AS 
+    revenus_par_localisation dict_localisation_revenu;
+    revenu_total NUMBER;
+BEGIN
+    revenus_par_localisation := dict_localisation_revenu();
+    FOR endroit IN (SELECT DISTINCT localisation FROM annonces)
+    LOOP
+    revenus_par_localisation(endroit.localisation) := 0;
+    END LOOP;
+    
+    FOR cle_localisation IN revenus_par_localisation.FIRST .. revenus_par_localisation.LAST
+    LOOP
+    DBMS_OUTPUT.PUT_LINE('Localisation: ' || cle_localisation || ', Revenus: ' || revenus_par_localisation(cle_localisation));
+    END LOOP;
+END;
+/
 ---------------
 -- Question 9
 ---------------
