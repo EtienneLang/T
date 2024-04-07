@@ -248,63 +248,68 @@ END;
 ---------------
 -- Question 8
 ---------------
-CREATE OR REPLACE TYPE dict_localisation_revenu IS TABLE OF NUMBER INDEX BY VARCHAR2(200);
-/
-
 CREATE OR REPLACE PROCEDURE revenu_par_localisation_PRC
 AS 
+    TYPE dict_localisation_revenu IS TABLE OF NUMBER INDEX BY VARCHAR2(200);
     revenus_par_localisation dict_localisation_revenu;
-    revenu_total NUMBER;
+    cle_localisation VARCHAR2(200);
+    total_revenue NUMBER;
 BEGIN
     revenus_par_localisation := dict_localisation_revenu();
-    FOR endroit IN (SELECT DISTINCT localisation FROM annonces)
-    LOOP
-    revenus_par_localisation(endroit.localisation) := 0;
+    
+    FOR endroit IN (SELECT DISTINCT localisation FROM annonces) LOOP
+        revenus_par_localisation(endroit.localisation) := 0;
     END LOOP;
     
-    FOR cle_localisation IN revenus_par_localisation.FIRST .. revenus_par_localisation.LAST
-    LOOP
-    DBMS_OUTPUT.PUT_LINE('Localisation: ' || cle_localisation || ', Revenus: ' || revenus_par_localisation(cle_localisation));
+    FOR endroit in (
+        SELECT localisation, SUM(montantTotal) as total_revenue
+        FROM annonces a
+        JOIN reservations r ON a.annonceid = r.annonceid
+        GROUP BY localisation
+    )LOOP
+        revenus_par_localisation(endroit.localisation) := endroit.total_revenue;
+    END LOOP;
+    
+    cle_localisation := revenus_par_localisation.FIRST;
+    WHILE cle_localisation IS NOT NULL LOOP
+        DBMS_OUTPUT.PUT_LINE(cle_localisation || ' : ' || revenus_par_localisation(cle_localisation) || '$');
+        cle_localisation := revenus_par_localisation.NEXT(cle_localisation);
     END LOOP;
 END;
 /
 ---------------
 -- Question 9
 ---------------
+set define off;
+
 CREATE OR REPLACE PROCEDURE reservation_par_usager_par_annonce_PRC 
 IS
-    v_number_of_clients NUMBER;
-    v_number_of_reservation NUMBER;
-    v_info_user utilisateurs%ROWTYPE;
-    v_info_reservation reservations%ROWTYPE;
+    utilisateur utilisateurs%ROWTYPE;
 BEGIN
-    SELECT COUNT(*) INTO v_number_of_clients FROM utilisateurs;
-                DBMS_OUTPUT.PUT_LINE(v_number_of_clients);
-
-    IF v_number_of_clients > 0 THEN
-        FOR i IN 1..v_number_of_clients LOOP
-            SELECT * INTO v_info_user FROM utilisateurs OFFSET i-1 ROWS FETCH NEXT 1 ROWS ONLY;
-            DBMS_OUTPUT.PUT_LINE('- - - - - - - - - - - - - - - - - - - - -');
-            DBMS_OUTPUT.PUT_LINE('Utilisateur ID : ' || v_info_user.utilisateurid);
-            DBMS_OUTPUT.PUT_LINE('Utilisateur Nom : ' || v_info_user.prenom || ' ' || v_info_user.nom);
-            
-            SELECT COUNT(*) INTO v_number_of_reservation FROM reservations WHERE utilisateurid = v_info_user.utilisateurid;
-            IF v_number_of_reservation <= 0 THEN
-                DBMS_OUTPUT.PUT_LINE('AUCUNE RÉSERVATIONS');
-            ELSE
-                FOR n IN 1..v_number_of_reservation LOOP
-                    SELECT * INTO v_info_reservation FROM reservations WHERE utilisateurid = v_info_user.utilisateurid OFFSET n-1 ROWS FETCH NEXT 1 ROWS ONLY;
-                        DBMS_OUTPUT.PUT_LINE('- -');
-                        DBMS_OUTPUT.PUT_LINE('Reservation ID : ' || v_info_reservation.reservationid);
-                        DBMS_OUTPUT.PUT_LINE('Date début : ' || v_info_reservation.datedebut);
-                        DBMS_OUTPUT.PUT_LINE('Date fin : ' || v_info_reservation.datefin);
-                END LOOP;
-            END IF;
-
+    FOR annonce IN (SELECT * FROM annonces)
+    LOOP
+        DBMS_OUTPUT.PUT_LINE('Annonce ID : ' || annonce.annonceid);
+        DBMS_OUTPUT.PUT_LINE('Titre : ' || annonce.titre);
+        DBMS_OUTPUT.PUT_LINE('Utilisateurs & réservations :');
+        FOR utilisateur_id IN (SELECT DISTINCT utilisateurid FROM reservations r WHERE r.annonceid = annonce.annonceid)
+        LOOP
+            SELECT * INTO utilisateur FROM utilisateurs WHERE utilisateurid = utilisateur_id.utilisateurid;
+            DBMS_OUTPUT.PUT_LINE('------------------------------------');
+            DBMS_OUTPUT.PUT_LINE('Utilisateur ID : ' || utilisateur.utilisateurid);
+            DBMS_OUTPUT.PUT_LINE('Utilisateur Nom : ' || utilisateur.prenom || ' ' || utilisateur.nom);
+            FOR reservation IN (SELECT * FROM reservations WHERE annonceid = annonce.annonceid AND utilisateurid = utilisateur.utilisateurid)
+            LOOP
+                DBMS_OUTPUT.PUT_LINE('--');
+                DBMS_OUTPUT.PUT_LINE('Réservation ID : ' || reservation.reservationid);
+                DBMS_OUTPUT.PUT_LINE('Date début : ' || reservation.datedebut);
+                DBMS_OUTPUT.PUT_LINE('Date fin : ' || reservation.datefin);
+            END LOOP;
         END LOOP;
-    END IF;
+        DBMS_OUTPUT.PUT_LINE(' ');
+        DBMS_OUTPUT.PUT_LINE(' ');
+    END LOOP;
 END;
-
+/
 
 ---------------
 -- Question 10

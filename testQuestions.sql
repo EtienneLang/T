@@ -80,6 +80,12 @@ EXEC reserver_PRC(3, DATE '2024-02-24', DATE '2024-04-24', 6)
 -- Pour Tester la fonction Q7
 -----------------------------------
 EXEC afficher_converstation_PRC(1,2)
+
+-----------------------------------
+-- Pour Tester la fonction Q8
+-----------------------------------
+
+EXEC revenu_par_localisation_PRC;
 -----------------------------------
 -- Pour Tester la fonction Q9
 -----------------------------------

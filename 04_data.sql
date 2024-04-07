@@ -59,6 +59,9 @@ INSERT INTO Reservations (ReservationID, UtilisateurID, AnnonceID, DateDebut, Da
 (1, 2, 1, TO_DATE('2024-04-01', 'YYYY-MM-DD'), TO_DATE('2024-04-05', 'YYYY-MM-DD'), 'confirmée', 400);
 
 INSERT INTO Reservations (ReservationID, UtilisateurID, AnnonceID, DateDebut, DateFin, Statut, MontantTotal) VALUES 
+(10, 2, 1, TO_DATE('2026-04-01', 'YYYY-MM-DD'), TO_DATE('2026-04-05', 'YYYY-MM-DD'), 'confirmée', 400);
+
+INSERT INTO Reservations (ReservationID, UtilisateurID, AnnonceID, DateDebut, DateFin, Statut, MontantTotal) VALUES 
 (2, 3, 2, TO_DATE('2024-04-10', 'YYYY-MM-DD'), TO_DATE('2024-04-15', 'YYYY-MM-DD'), 'confirmée', 750);
 
 INSERT INTO Reservations (ReservationID, UtilisateurID, AnnonceID, DateDebut, DateFin, Statut, MontantTotal) VALUES 
