@@ -18,7 +18,7 @@ AS
     
     FUNCTION Q2_annonce_est_disponible_FCT(i_id_annonce IN NUMBER, i_date_debut IN DATE, i_date_fin IN DATE) RETURN BOOLEAN;
     
-    FUNCTION Q3_calculer_total_FCT(i_date_debut IN DATE, i_date_fin IN DATE, i_nombre_personne IN NUMBER) RETURN NUMBER;
+    FUNCTION Q3_calculer_total_FCT(i_annonce_id IN NUMBER, i_date_debut IN DATE, i_date_fin IN DATE, i_nombre_personne IN NUMBER) RETURN NUMBER;
     
     FUNCTION Q4_obtenir_message_historique_FCT(i_id_user_1 IN NUMBER, i_id_user_2 IN NUMBER) RETURN t_message_varray;
     

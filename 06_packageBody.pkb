@@ -1,5 +1,9 @@
 CREATE OR REPLACE PACKAGE BODY Q10_creer_package_traitement_cnc IS
     
+    /**
+    * Fonction qui sert à vérifier si un utilisateur existe.
+    * Prends un id en paramètre et retourne un booléen en fonction de l'existance de l'utilisateur
+    */
     FUNCTION Q1_utilisateur_existe_FCT(i_id_user IN NUMBER) RETURN BOOLEAN
     IS
         v_compteur NUMBER;
@@ -27,7 +31,11 @@ CREATE OR REPLACE PACKAGE BODY Q10_creer_package_traitement_cnc IS
         RETURN v_reponse;
     END Q1_utilisateur_existe_FCT;
 
-
+    /**
+    * Fonction qui valide si une annonce est disponible entre deux dates données.
+    * Elle reçoit l'id de l'annonce désiré ainsi que les deux date à valider.
+    * Retourne un booléen selon la disponibilité de l'annonce
+    */
     FUNCTION Q2_annonce_est_disponible_FCT(i_id_annonce IN NUMBER, i_date_debut IN DATE, i_date_fin IN DATE) RETURN BOOLEAN
     IS
         v_compteur NUMBER;
@@ -43,29 +51,42 @@ CREATE OR REPLACE PACKAGE BODY Q10_creer_package_traitement_cnc IS
         IF i_date_fin < i_date_debut THEN 
             RAISE_APPLICATION_ERROR(-20003, 'Dates non valides : Date fin dois être plus grande que date début.');
         END IF;
+        
+        SELECT COUNT(*) INTO v_compteur
+        FROM annonces WHERE annonceid = i_id_annonce;
+        IF v_compteur = 0 THEN 
+            RAISE_APPLICATION_ERROR(-20004, 'id de l''annonce ne correspond à aucune annonce');
+        END IF;
         -----------------------
         SELECT COUNT(*)
         INTO v_compteur
-        FROM cnc.annonces
-        WHERE annonceid = i_id_annonce AND datecreation BETWEEN i_date_debut AND i_date_fin;
-        
+        FROM reservations
+        WHERE annonceid = i_id_annonce 
+            AND ((i_date_debut BETWEEN datedebut AND datefin)
+            OR (i_date_fin BETWEEN datedebut AND datefin));
+                
         IF v_compteur = 0 THEN
-            RAISE_APPLICATION_ERROR(-20004, 'L''ID passé en paramètre ne correspond à rien dans la base de données.');
-        END IF;
-        
-        IF v_compteur <= 0 THEN
-            v_reponse := false;
-        ELSE
             v_reponse := true;
+        ELSE
+            v_reponse := false;
         END IF;
         RETURN v_reponse;
     END Q2_annonce_est_disponible_FCT;
     
-    FUNCTION Q3_calculer_total_FCT(i_date_debut IN DATE, i_date_fin IN DATE, i_nombre_personne IN NUMBER) RETURN NUMBER
+    /**
+    * Fonction qui sert à calculer le total d'une facture.
+    * Prends en paramètre l'id de l'annonce, la date d'arrivé, la date de départ ainsi que le nombre de personnes qui vont y rester.
+    * Retourne le total pour une réservation demandé.
+    */
+    FUNCTION Q3_calculer_total_FCT(i_annonce_id IN NUMBER, i_date_debut IN DATE, i_date_fin IN DATE, i_nombre_personne IN NUMBER) RETURN NUMBER
     IS
         v_nombre_jours NUMBER;
+        v_prix_par_nuit NUMBER;
+        v_prix_base NUMBER;
         v_total NUMBER := 0;
-        v_prix_nettoyage NUMBER := 20;
+        v_prix_nettoyage NUMBER := 0;
+        v_prix_nettoyage_base NUMBER := 20;
+        v_compteur NUMBER := 0;
     BEGIN
         -- Gestion d'erreurs --
         IF i_date_debut IS NULL OR i_date_fin IS NULL OR i_nombre_personne IS NULL THEN
@@ -77,31 +98,56 @@ CREATE OR REPLACE PACKAGE BODY Q10_creer_package_traitement_cnc IS
         IF i_date_fin < i_date_debut THEN 
             RAISE_APPLICATION_ERROR(-20003, 'Dates non valides : Date fin dois être plus grande que date début.');
         END IF;
+        
+        SELECT COUNT(*) INTO v_compteur
+        FROM annonces WHERE annonceid = i_annonce_id;
+        IF v_compteur = 0 THEN
+            RAISE_APPLICATION_ERROR(-20004, 'id de l''annonce ne correspond à aucune annonce');
+        END IF;
         -----------------------
         v_nombre_jours := EXTRACT(DAY FROM NUMTODSINTERVAL(i_date_fin - i_date_debut, 'DAY'));
-        IF v_nombre_jours >= 2 THEN
-            v_total := v_total + i_nombre_personne * v_prix_nettoyage * 2;
-            IF v_nombre_jours > 2 THEN
-                v_nombre_jours := v_nombre_jours - 2;
-                FOR i IN 1..v_nombre_jours LOOP
-                    v_prix_nettoyage := v_prix_nettoyage - 2;
-                    IF v_prix_nettoyage < 5 THEN 
-                        v_prix_nettoyage := 5;
-                    END IF;
-                    v_total := v_total + v_prix_nettoyage * i_nombre_personne;
-                END LOOP;
-            END IF;
-        ELSE 
-            v_total := v_total + i_nombre_personne * 20 * v_nombre_jours;
+        SELECT prixparnuit INTO v_prix_par_nuit FROM annonces WHERE annonceid = i_annonce_id;
+        v_prix_base := v_nombre_jours * v_prix_par_nuit;
+        
+        IF v_nombre_jours <= 2 THEN
+            v_prix_nettoyage := v_nombre_jours * v_prix_nettoyage_base * i_nombre_personne; 
+        ELSE
+            v_prix_nettoyage := 2 * v_prix_nettoyage_base * i_nombre_personne;
+            v_nombre_jours := v_nombre_jours - 2;
+            WHILE v_nombre_jours > 0 LOOP
+                v_prix_nettoyage_base := v_prix_nettoyage_base - 2;
+                IF v_prix_nettoyage_base < 5 THEN
+                    v_prix_nettoyage_base := 5;
+                END IF;    
+                v_prix_nettoyage := v_prix_nettoyage + (v_prix_nettoyage_base * i_nombre_personne);
+                v_nombre_jours := v_nombre_jours - 1;
+            END LOOP;
         END IF;
+        v_total := v_prix_base + v_prix_nettoyage;
         RETURN v_total;
     END Q3_calculer_total_FCT;
 
-
+    /**
+    * Fonction qui sert a obtenir l'historique des messages échangés entre deux utilisateurs
+    * Prends en paramètres l'id des deux utilisateurs
+    * Retourne un VARRAY de messages (vide s'il n'y a pas de messages entre les deux utilisateurs)
+    */
     FUNCTION Q4_obtenir_message_historique_FCT(i_id_user_1 IN NUMBER, i_id_user_2 IN NUMBER) RETURN t_message_varray
     AS
         messages t_message_varray := t_message_varray();
+        v_compteur NUMBER;
     BEGIN
+        --gestion d'erreur
+        IF i_id_user_1 IS NULL OR i_id_user_2 IS NULL THEN 
+            RAISE_APPLICATION_ERROR(-20001, 'Paramètre NULL : L''ID d''un utilisateur est NULL.');
+        END IF;
+        IF i_id_user_1 < 0 OR i_id_user_2 < 0 THEN 
+            RAISE_APPLICATION_ERROR(-20002, 'L''id d''un des utilisateur est négatif');
+        END IF;
+        SELECT COUNT(*) INTO v_compteur FROM utilisateurs WHERE utilisateurid = i_id_user_1 OR utilisateurid = i_id_user_2;
+        IF v_compteur != 2 THEN
+            RAISE_APPLICATION_ERROR(-20010, 'Un ou les deux utilisateurs n''existe(ent) pas dans la base de données');
+        END IF;
         FOR message_trouve IN(
             SELECT * FROM messages
             WHERE (expediteurutilisateurid = i_id_user_1 AND destinataireutilisateurid = i_id_user_2)
@@ -121,7 +167,10 @@ CREATE OR REPLACE PACKAGE BODY Q10_creer_package_traitement_cnc IS
         RETURN messages;
     END Q4_obtenir_message_historique_FCT;
     
-    
+    /**
+    * Procédure qui sert à supprimer une annonce ainsi que toutes les autres choses qui lui sont reliées
+    * Prends en paramètre l'id de l'annonce
+    */
     PROCEDURE Q5_supprimer_annonce_PRC(i_id_annonce IN NUMBER)
     IS
         v_compteur NUMBER;
@@ -151,7 +200,10 @@ CREATE OR REPLACE PACKAGE BODY Q10_creer_package_traitement_cnc IS
         WHERE annonceid = i_id_annonce;
     END Q5_supprimer_annonce_PRC; 
 
-
+    /**
+    * Procédure qui sert a réserver sur une annonce.
+    * Prends en paramètres l'id de l'annonce, la date d'arrivé, la date de départ ainsi que le nombre de personnes qui vont séjourner
+    */
     PROCEDURE Q6_reserver_PRC(i_id_annonce IN NUMBER, i_date_debut IN DATE, i_date_fin IN DATE, i_nombre_personne IN NUMBER)
     IS
         v_result BOOLEAN;
@@ -183,21 +235,30 @@ CREATE OR REPLACE PACKAGE BODY Q10_creer_package_traitement_cnc IS
         END IF;
     END Q6_reserver_PRC; 
     
+    /**
+    * Procédure qui affiche la conversation entre deux utilisateurs dans la console
+    * Prends en paramètre l'id des deux utilisateurs concernés
+    */
     PROCEDURE Q7_afficher_converstation_PRC(i_id_user1 NUMBER, i_id_user2 NUMBER)
     AS
         messages t_message_varray;
         nom_utilisateur VARCHAR2(100);
     BEGIN
         messages := Q4_obtenir_message_historique_FCT(i_id_user1, i_id_user2);
-        FOR i in 1..messages.COUNT
-        LOOP
-            SELECT prenom || ' ' || nom INTO nom_utilisateur
-            FROM utilisateurs WHERE utilisateurid = messages(i).ExpediteurUtilisateurID;
-            DBMS_OUTPUT.PUT_LINE(nom_utilisateur || ' : ' || messages(i).Contenu || ' - envoyé le ' || TO_CHAR(messages(i).DateEnvoi, 'YYYY-MM-DD HH24:MI:SS'));
-        END LOOP;
+        IF messages.COUNT = 0 THEN
+            DBMS_OUTPUT.PUT_LINE('Aucun message trouvé entre les deux utilisateurs');
+        ELSE
+            FOR i in 1..messages.COUNT LOOP
+                SELECT prenom || ' ' || nom INTO nom_utilisateur
+                FROM utilisateurs WHERE utilisateurid = messages(i).ExpediteurUtilisateurID;
+                DBMS_OUTPUT.PUT_LINE(nom_utilisateur || ' : ' || messages(i).Contenu || ' - envoyé le ' || TO_CHAR(messages(i).DateEnvoi, 'YYYY-MM-DD HH24:MI:SS'));
+            END LOOP;
+        END IF;
     END Q7_afficher_converstation_PRC;
     
-    
+    /**
+    * Procédure qui affiche dans la console le revenue de chaque localisation distincte dans la table annonces
+    */
     PROCEDURE Q8_revenu_par_localisation_PRC
     AS 
         TYPE dict_localisation_revenu IS TABLE OF NUMBER INDEX BY VARCHAR2(200);
@@ -227,7 +288,9 @@ CREATE OR REPLACE PACKAGE BODY Q10_creer_package_traitement_cnc IS
         END LOOP;
     END Q8_revenu_par_localisation_PRC;
     
-    
+    /**
+    * Procédure qui affiche à chaque annonce chacune des réservations fait par un utilisateur sur cette dernière
+    */
     PROCEDURE Q9_reservation_par_usager_par_annonce_PRC 
     IS
         utilisateur utilisateurs%ROWTYPE;
